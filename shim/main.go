@@ -16,9 +16,12 @@
 package main
 
 import (
+	"gvisor.dev/gvisor/pkg/shim/v1/extension"
+	"gvisor.dev/gvisor/pkg/shim/v1/porterhold"
 	"gvisor.dev/gvisor/shim/v1/cli"
 )
 
 func main() {
+	extension.NewExtension = porterhold.New
 	cli.Main()
 }

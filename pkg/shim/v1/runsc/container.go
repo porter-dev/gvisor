@@ -94,18 +94,25 @@ func NewContainer(ctx context.Context, platform stdio.Platform, conf *ContainerC
 		return nil, fmt.Errorf("create namespace: %w", err)
 	}
 	var opts Options
+	path := ""
 	if conf.Options != nil {
 		runtimeOptions := &runtimeoptions.Options{}
-		if err := typeurl.UnmarshalTo(conf.Options, runtimeOptions); err != nil {
-			return nil, fmt.Errorf("unmarshal runtime options: %w", err)
+		if err := typeurl.UnmarshalTo(conf.Options, runtimeOptions); err == nil {
+			path = runtimeOptions.GetConfigPath()
+		} else {
+			// In sandboxer=shim mode containerd forces runc-typed task options
+			// onto containers joining the sandbox, so they are not runsc's.
+			// Fall back to the well-known config path rather than failing.
+			log.L.Debugf("runtime options are not runsc's (%v); using default config path", err)
 		}
-
-		path := runtimeOptions.GetConfigPath()
-		if path != "" {
-			// Read runsc options from the config file.
-			if _, err = toml.DecodeFile(path, &opts); err != nil {
-				return nil, fmt.Errorf("decode config file %q: %w", path, err)
-			}
+	}
+	if path == "" {
+		path = DefaultShimConfigPath()
+	}
+	if path != "" {
+		// Read runsc options from the config file.
+		if _, err = toml.DecodeFile(path, &opts); err != nil {
+			return nil, fmt.Errorf("decode config file %q: %w", path, err)
 		}
 	}
 

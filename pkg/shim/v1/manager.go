@@ -135,7 +135,7 @@ func (m *manager) Start(ctx context.Context, id string, opts shim.StartOpts) (sh
 			if err := writeAddress("address", address); err != nil {
 				return shim.BootstrapParams{}, fmt.Errorf("write existing socket for shim: %w", err)
 			}
-			return shim.BootstrapParams{Version: 2, Address: address, Protocol: "ttrpc"}, nil
+			return shim.BootstrapParams{Version: 3, Address: address, Protocol: "ttrpc"}, nil
 		}
 		if err := shim.RemoveSocket(address); err != nil {
 			return shim.BootstrapParams{}, fmt.Errorf("remove pre-existing socket: %w", err)
@@ -183,7 +183,7 @@ func (m *manager) Start(ctx context.Context, id string, opts shim.StartOpts) (sh
 		return shim.BootstrapParams{}, fmt.Errorf("failed to set OOM Score on shim: %w", err)
 	}
 	cu.Release()
-	return shim.BootstrapParams{Version: 2, Address: address, Protocol: "ttrpc"}, nil
+	return shim.BootstrapParams{Version: 3, Address: address, Protocol: "ttrpc"}, nil
 }
 
 // Stop implements shim.Manager.Stop.
